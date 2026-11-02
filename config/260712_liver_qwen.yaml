@@ -1,0 +1,67 @@
+# - train/train_liver_qwen.py
+
+save_name: 260712_liver_qwen
+
+paths:
+  model_path: models/qwen-7b
+  h5_path: embedding/liver_embeddings.h5
+  split_json: splits/split_8_1_1.json
+  output_dir: outputs/liver
+
+model:
+  image_dim: 512
+  prompt_len: 16
+  max_length: 512
+  adapter_hidden_dim: 1024
+  dropout: 0.1
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+    - "c_attn"
+    - "c_proj"
+    - "w1"
+    - "w2"
+
+training:
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 8
+  num_train_epochs: 10
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.01
+  lr_scheduler_type: "cosine"
+  logging_steps: 10
+  save_total_limit: 3
+  save_strategy: "epoch"
+  save_ckpt_freq: 1
+  eval_freq: 1
+  vis_freq: 1
+  max_grad_norm: 1.0
+  num_vis_samples: 3
+  dataloader_num_workers: 4
+  seed: 42
+
+generation:
+  max_new_tokens: 256
+  do_sample: false
+  temperature: 1.0
+  top_p: 1.0
+  repetition_penalty: 1.0
+prompt:
+  system_prompt: "You are an experienced liver radiologist. Based on the supplied liver CT representation, write a precise, concise diagnostic imaging report in Chinese."
+  report_prompts:
+    - "Write a professional diagnostic imaging report for this liver CT scan."
+    - "Write a clinical diagnostic report for this liver CT scan."
+    - "Analyze this liver CT scan and provide the diagnostic conclusion and supporting imaging findings."
+    - "Write a concise, professional diagnostic imaging report based on this liver CT scan."
+
+device: "cuda"
+
+runtime:
+  use_tf32: false
+  low_cpu_mem_usage: true
+  save_safetensors: true
